@@ -1,5 +1,6 @@
 package com.smartHome.commonLibrary.WifiDevices;
 
+import com.smartHome.commonLibrary.HelperClasses.WifiTech;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -10,8 +11,27 @@ import java.net.InetAddress;
 import java.util.*;
 
 @Service
-public class SearchWifiDevices {
+public class SearchWifiDevices extends Thread{
 
+
+    public String cmdPromt;
+    public Boolean isWindows;
+    public String middlearg;
+    public SearchWifiDevices(){
+           String os = System.getProperty("os.name");
+           if(os.trim().toLowerCase().startsWith("windows")) {
+               this.isWindows = true;
+               this.cmdPromt = "cmd.exe";
+               this.middlearg = "/c";
+           }
+           else {
+               this.isWindows = false;
+               this.cmdPromt = "/bin/sh";
+               this.middlearg = "-c";
+           }
+
+           System.out.println(cmdPromt);
+    }
     
     public byte[] getIp(){
         byte[] ip = new byte[4];
@@ -59,10 +79,16 @@ public class SearchWifiDevices {
     
     public HashMap<String,String> getIPMACMmap(List<String> ipList,String defGate) throws IOException {
         HashMap<String ,String> res = new HashMap<String,String>();
+        //Try using these instead of string to string Map
+        List<WifiTech> wifiTeches = new ArrayList<>();
         for(String recievedIP:ipList) {
+            String recIPcopy = new String(recievedIP);
+            if(!this.isWindows){
+                recievedIP = "("+recievedIP+")";
+            }
             if(recievedIP.equalsIgnoreCase(defGate))
                 continue;
-            ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/c", "arp -a " + recievedIP);
+            ProcessBuilder builder = new ProcessBuilder(this.cmdPromt, this.middlearg, "arp -a " + recievedIP);
             builder.redirectErrorStream(true);
             Process p = builder.start();
             BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -76,8 +102,11 @@ public class SearchWifiDevices {
                 if (stringTokenizer.hasMoreTokens()) {
                     String word = stringTokenizer.nextToken();
                     if (word.equalsIgnoreCase(recievedIP)) {
+                        if(!isWindows)
+                            stringTokenizer.nextToken();
                         MAC = stringTokenizer.nextToken();
-                        res.put(MAC,recievedIP);
+                        res.put(MAC,recIPcopy);
+                        wifiTeches.add(new WifiTech(MAC,recIPcopy));
                     }
                 }
             }
@@ -111,10 +140,12 @@ public class SearchWifiDevices {
                 if(l==0)
                     continue;
                 String[] words = new String[l];
+                HashSet<String> lineSet = new HashSet<String>();
                 for(int i=0;i<l;i++){
                     words[i] = stringTokenizer.nextToken();
+                    lineSet.add(words[i].toLowerCase());
                 }
-                if(words[0].equalsIgnoreCase("Default")){
+                if(lineSet.contains("gateway")){//words[0].equalsIgnoreCase("Default")){
                     defGateway = words[l-1];
                     break;
                 }

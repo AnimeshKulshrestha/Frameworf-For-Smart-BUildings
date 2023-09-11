@@ -1,34 +1,47 @@
 package com.smartHome.commonLibrary.BluetoothDevices;
 
-import javax.bluetooth.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Vector;
+import javax.bluetooth.*;
+public class SearchBTDevices extends Thread{
+    public HashMap<String,String> findALlBTDevices() throws IOException, InterruptedException {
 
-public class SearchBTDevices {
+        final Object inquiryCompletedEvent = new Object();
+        HashMap<String,String> res = new HashMap<String,String>();
+        DiscoveryListener listener = new DiscoveryListener() {
 
-    public List<String> findDevicesAround() {
-        List<String> macAdrList = new ArrayList<>();
-        try {
-            LocalDevice localDevice = LocalDevice.getLocalDevice();
-
-            DiscoveryAgent discoveryAgent = localDevice.getDiscoveryAgent();
-            RemoteDevice[] remoteDevices = discoveryAgent.retrieveDevices(DiscoveryAgent.PREKNOWN);
-
-            if (remoteDevices != null) {
-                System.out.println("Discovered Bluetooth Devices:");
-                for (RemoteDevice remoteDevice : remoteDevices) {
-                    System.out.println("Device Name: " + remoteDevice.getFriendlyName(false));
-                    System.out.println("Device Address: " + remoteDevice.getBluetoothAddress());
-                    macAdrList.add(remoteDevice.getBluetoothAddress());
+            public void deviceDiscovered(RemoteDevice btDevice, DeviceClass cod) {
+                try {
+                    res.put(btDevice.getBluetoothAddress(),btDevice.getFriendlyName(false));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
-            } else {
-                System.out.println("No Bluetooth devices found.");
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+
+            public void inquiryCompleted(int discType) {
+                System.out.println("Device Inquiry completed!");
+                synchronized(inquiryCompletedEvent){
+                    inquiryCompletedEvent.notifyAll();
+                }
+            }
+
+            public void serviceSearchCompleted(int transID, int respCode) {
+            }
+
+            public void servicesDiscovered(int transID, ServiceRecord[] servRecord) {
+            }
+        };
+
+        synchronized(inquiryCompletedEvent) {
+            boolean started = LocalDevice.getLocalDevice().getDiscoveryAgent().startInquiry(DiscoveryAgent.GIAC, listener);
+            if (started) {
+                System.out.println("wait for device inquiry to complete...");
+                inquiryCompletedEvent.wait();
+            }
         }
-        return macAdrList;
+        return res;
     }
 }
-
