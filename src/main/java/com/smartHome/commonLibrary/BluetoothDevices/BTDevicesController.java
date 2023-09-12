@@ -1,5 +1,6 @@
 package com.smartHome.commonLibrary.BluetoothDevices;
 
+import com.smartHome.commonLibrary.HelperClasses.NetworkTechnology;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -13,7 +14,7 @@ import java.util.List;
 public class BTDevicesController {
 
     @GetMapping("/getDevices")
-    public HashMap<String,String> getBTDevice() throws IOException, InterruptedException {
+    public HashMap<String,NetworkTechnology> getBTDevice() throws IOException, InterruptedException {
         return new SearchBTDevices().findALlBTDevices();
     }
 

@@ -1,5 +1,6 @@
 package com.smartHome.commonLibrary.WifiDevices;
 
+import com.smartHome.commonLibrary.HelperClasses.NetworkTechnology;
 import com.smartHome.commonLibrary.HelperClasses.WifiTech;
 import org.springframework.stereotype.Service;
 
@@ -14,23 +15,23 @@ import java.util.*;
 public class SearchWifiDevices extends Thread{
 
 
-    public String cmdPromt;
+    public String cmdPrompt;
     public Boolean isWindows;
     public String middlearg;
     public SearchWifiDevices(){
            String os = System.getProperty("os.name");
            if(os.trim().toLowerCase().startsWith("windows")) {
                this.isWindows = true;
-               this.cmdPromt = "cmd.exe";
+               this.cmdPrompt = "cmd.exe";
                this.middlearg = "/c";
            }
            else {
                this.isWindows = false;
-               this.cmdPromt = "/bin/sh";
+               this.cmdPrompt = "/bin/sh";
                this.middlearg = "-c";
            }
 
-           System.out.println(cmdPromt);
+           System.out.println(cmdPrompt);
     }
     
     public byte[] getIp(){
@@ -47,7 +48,7 @@ public class SearchWifiDevices extends Thread{
         }
         return ip;
     }
-    public HashMap<String,String> findAllIPs() throws InterruptedException, IOException {
+    public HashMap<String,NetworkTechnology> findAllIPs() throws InterruptedException, IOException {
         final byte[] ip = getIp();
         if(ip==null)
             return null;
@@ -68,19 +69,17 @@ public class SearchWifiDevices extends Thread{
                         }
                     } catch (Exception e) {}
                 }
-            });     // dont forget to start the thread
+            });     // don't forget to start the thread
             threads[i].start();
         }
         for(int i = 1; i<=254; i++){
             threads[i].join();
         }
-        return getIPMACMmap(ipList,defGateway);
+        return getIPMACmap(ipList,defGateway);
     }
     
-    public HashMap<String,String> getIPMACMmap(List<String> ipList,String defGate) throws IOException {
-        HashMap<String ,String> res = new HashMap<String,String>();
-        //Try using these instead of string to string Map
-        List<WifiTech> wifiTeches = new ArrayList<>();
+    public HashMap<String,NetworkTechnology> getIPMACmap(List<String> ipList, String defGate) throws IOException {
+        HashMap<String,NetworkTechnology> wifiList = new HashMap<String,NetworkTechnology>();
         for(String recievedIP:ipList) {
             String recIPcopy = new String(recievedIP);
             if(!this.isWindows){
@@ -88,7 +87,7 @@ public class SearchWifiDevices extends Thread{
             }
             if(recievedIP.equalsIgnoreCase(defGate))
                 continue;
-            ProcessBuilder builder = new ProcessBuilder(this.cmdPromt, this.middlearg, "arp -a " + recievedIP);
+            ProcessBuilder builder = new ProcessBuilder(this.cmdPrompt, this.middlearg, "arp -a " + recievedIP);
             builder.redirectErrorStream(true);
             Process p = builder.start();
             BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -105,19 +104,42 @@ public class SearchWifiDevices extends Thread{
                         if(!isWindows)
                             stringTokenizer.nextToken();
                         MAC = stringTokenizer.nextToken();
-                        res.put(MAC,recIPcopy);
-                        wifiTeches.add(new WifiTech(MAC,recIPcopy));
+                        MAC = MAC.substring(0,2)+
+                                MAC.substring(3,5)+
+                                MAC.substring(6,8)+
+                                MAC.substring(9,11)+
+                                MAC.substring(12,14)+
+                                MAC.substring(15,17);
+                        MAC = MAC.toUpperCase();
+                        wifiList.put(MAC,new WifiTech(recIPcopy ,MAC));
                     }
                 }
             }
         }
-        return res;
+        return wifiList;
     }
 
     public String getDefaultGateway(String ip) throws IOException {
-
         String defGateway = "";
-        ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/c", "ipconfig");
+        if(!isWindows){
+            ProcessBuilder builder = new ProcessBuilder(cmdPrompt, middlearg, "ip route | grep default");
+            builder.redirectErrorStream(true);
+            Process p = builder.start();
+            BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String line;
+            while (true){
+                line = r.readLine();
+                if (line == null) {
+                    break;
+                }
+                StringTokenizer stringTokenizer = new StringTokenizer(line);
+                stringTokenizer.nextToken();
+                stringTokenizer.nextToken();
+                defGateway = stringTokenizer.nextToken();
+            }
+            return defGateway;
+        }
+        ProcessBuilder builder = new ProcessBuilder(cmdPrompt, middlearg, "ipconfig");
         builder.redirectErrorStream(true);
         Process p = builder.start();
         BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));

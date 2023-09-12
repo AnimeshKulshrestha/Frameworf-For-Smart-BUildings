@@ -1,5 +1,8 @@
 package com.smartHome.commonLibrary.BluetoothDevices;
 
+import com.smartHome.commonLibrary.HelperClasses.BTTech;
+import com.smartHome.commonLibrary.HelperClasses.NetworkTechnology;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,15 +10,17 @@ import java.util.List;
 import java.util.Vector;
 import javax.bluetooth.*;
 public class SearchBTDevices extends Thread{
-    public HashMap<String,String> findALlBTDevices() throws IOException, InterruptedException {
+    public HashMap<String,NetworkTechnology> findALlBTDevices() throws IOException, InterruptedException {
 
         final Object inquiryCompletedEvent = new Object();
-        HashMap<String,String> res = new HashMap<String,String>();
+        HashMap<String,NetworkTechnology> BTList = new HashMap<String,NetworkTechnology>();
         DiscoveryListener listener = new DiscoveryListener() {
 
             public void deviceDiscovered(RemoteDevice btDevice, DeviceClass cod) {
                 try {
-                    res.put(btDevice.getBluetoothAddress(),btDevice.getFriendlyName(false));
+                    String name = btDevice.getFriendlyName(false)
+                            ,MAC = btDevice.getBluetoothAddress();
+                    BTList.put(MAC,new BTTech(name,btDevice.isTrustedDevice(),MAC));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -42,6 +47,6 @@ public class SearchBTDevices extends Thread{
                 inquiryCompletedEvent.wait();
             }
         }
-        return res;
+        return BTList;
     }
 }

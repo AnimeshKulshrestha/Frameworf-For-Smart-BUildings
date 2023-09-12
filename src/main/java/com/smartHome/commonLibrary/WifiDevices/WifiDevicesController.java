@@ -1,9 +1,11 @@
 package com.smartHome.commonLibrary.WifiDevices;
 
+import com.smartHome.commonLibrary.HelperClasses.NetworkTechnology;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 
 @RestController
 @CrossOrigin
@@ -11,7 +13,7 @@ import java.util.HashMap;
 public class WifiDevicesController {
 
     @GetMapping("/getDevices")
-    public HashMap<String,String> getMQTTDevices() throws InterruptedException, IOException {
+    public HashMap<String,NetworkTechnology> getMQTTDevices() throws InterruptedException, IOException {
         SearchWifiDevices searchWifiDevices = new SearchWifiDevices();
         return searchWifiDevices.findAllIPs();
     }

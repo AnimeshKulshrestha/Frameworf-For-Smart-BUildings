@@ -1,18 +1,27 @@
 package com.smartHome.commonLibrary.HelperClasses;
 
-public class WifiTech extends NetworkTechnology {
+public class WifiTech extends NetworkTechnology{
 
-    public String getIPAddr() {
-        return IPAddr;
+    private String IP;
+
+    public String getIP() {
+        return IP;
     }
 
-    public void setIPAddr(String IPAddr) {
-        this.IPAddr = IPAddr;
+    public void setIP(String IP) {
+        this.IP = IP;
     }
 
-    public String IPAddr;
-    public WifiTech(String MAC,String IP){
-        this.IPAddr = IP;
-        this.MAC = MAC;
+    @Override
+    public String toString() {
+        return "WifiTech{" +
+                "IP='" + getIP() + '\'' +
+                ", MAC='" + getMAC() + '\'' +
+                '}';
+    }
+
+    public WifiTech(String IP, String MAC) {
+        this.setIP(IP);
+        this.setMAC(MAC);
     }
 }
