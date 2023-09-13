@@ -2,6 +2,9 @@ package com.smartHome.commonLibrary.WifiDevices;
 
 import com.smartHome.commonLibrary.HelperClasses.NetworkTechnology;
 import com.smartHome.commonLibrary.HelperClasses.WifiTech;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -10,11 +13,13 @@ import java.io.InputStreamReader;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.*;
+import java.util.concurrent.Callable;
 
 @Service
 public class SearchWifiDevices extends Thread{
 
 
+    public MqttClient client;
     public String cmdPrompt;
     public Boolean isWindows;
     public String middlearg;
@@ -33,6 +38,7 @@ public class SearchWifiDevices extends Thread{
 
            System.out.println(cmdPrompt);
     }
+
     
     public byte[] getIp(){
         byte[] ip = new byte[4];
@@ -225,9 +231,9 @@ public class SearchWifiDevices extends Thread{
     }
 
     private MqttMessage readEngineTemp() {
-        String mess = "LED ON";
+        String mess = "LED OFF";
         byte[] payload = mess.getBytes();
         return new MqttMessage(payload);
     }
-    ***/
+    */
 }

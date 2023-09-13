@@ -22,12 +22,8 @@ public class BTTech extends NetworkTechnology{
         return isPaired;
     }
 
-    public void setPaired(boolean paired) {
-        isPaired = paired;
-    }
-
     private String name;
-    public boolean isPaired;
+    private boolean isPaired;
 
     public BTTech(String name, boolean isPaired,String MAC) {
         this.setName(name);

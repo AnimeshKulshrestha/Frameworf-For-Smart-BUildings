@@ -7,12 +7,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 
 @RestController
 @CrossOrigin
 @RequestMapping("common")
-public class CommomController {
+public class CommomController{
 
     public static HashMap<String, HashMap<String,NetworkTechnology>> allDev = null;
 
@@ -37,16 +36,20 @@ public class CommomController {
              * Use the IP address to perform Wi-fi Protocol in the following code
              */
             Thread mqtt = new Thread(new Runnable() {
+
                 @Override
                 public void run() {
+
+                    new MQTTProtocol().runMQTTProtocol();
                     /***
                      * Try to run MQTT protocol if it fails its probably Zigbee running in another thread
-                      */
+                     */
                 }
             });
             Thread zigbee = new Thread(new Runnable() {
                 @Override
                 public void run() {
+                    System.out.println("Zigbee check");
                     /***
                      * Try to run ZigBee protocol if it fails its probably MQTT running in another thread
                      */
@@ -58,18 +61,17 @@ public class CommomController {
             zigbee.join();
             return "Wifi";
 
-        }else{
+        }else if(allDev.get(GetAllDevices.bt).containsKey(MAC)){
             BTTech BTDev = (BTTech) allDev.get(GetAllDevices.bt).get(MAC);
             boolean isPaired = BTDev.isPaired();
             String name = BTDev.getName();
             return "Bluetooth";
-            /***
-             *
-             *
+            /**
              *  Use the Information to perform Bluetooth Protocols
-             *
              */
         }
+        return "MAC address not found discover again";
     }
+
 
 }
