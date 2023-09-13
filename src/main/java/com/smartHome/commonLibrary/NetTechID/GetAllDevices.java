@@ -9,7 +9,9 @@ import com.smartHome.commonLibrary.WifiDevices.SearchWifiDevices;
 import java.io.IOException;
 import java.util.*;
 
-
+/**
+ * This class has methods to get a common Map of devices all networking technologies
+ */
 public class GetAllDevices {
 
     public static String wifi = "WiFi";
@@ -19,6 +21,13 @@ public class GetAllDevices {
         new GetAllDevices().threadsForID();
     }
 
+    /**
+     * This method finds a common Map of devices all networking technologies by creating different
+     * threads for each of then
+     * @return a common Map of devices all networking technologies
+     * @throws InterruptedException
+     * @throws IOException
+     */
     public HashMap<String,HashMap<String,NetworkTechnology>> threadsForID() throws InterruptedException, IOException {
         List<String> netTechList = new ArrayList<>();
         netTechList.add(wifi);

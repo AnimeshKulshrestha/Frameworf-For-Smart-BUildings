@@ -9,6 +9,9 @@ import java.util.Scanner;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
+/**
+ * This class implements the MQTTProtocol on Wi-Fi devices
+ */
 public class MQTTProtocol extends Thread implements Callable<Void> {
     public MqttClient client;
     boolean on;
@@ -17,6 +20,10 @@ public class MQTTProtocol extends Thread implements Callable<Void> {
         MQTTProtocol mqttProtocol = new MQTTProtocol();
         mqttProtocol.runMQTTProtocol();
     }
+
+    /**
+     * This method runs the MQTT Protocol for LED turn on and off
+     */
     public void runMQTTProtocol(){
 
         String broker = "tcp://192.168.45.53:1883"; // MQTT broker address
@@ -66,6 +73,11 @@ public class MQTTProtocol extends Thread implements Callable<Void> {
         }
     }
 
+    /**
+     * Call function that sends the publishes the message on device
+     * @return
+     * @throws Exception
+     */
     @Override
     public Void call() throws Exception {
         if ( !client.isConnected()) {
@@ -83,11 +95,20 @@ public class MQTTProtocol extends Thread implements Callable<Void> {
         return null;
     }
 
+    /**
+     * Method to turn LED off
+     * @return MQTT message that is sent to turn the LED off
+     */
     private MqttMessage turnLEDOff() {
         String mess = "LED OFF";
         byte[] payload = mess.getBytes();
         return new MqttMessage(payload);
     }
+
+    /**
+     * Method to turn LED on
+     * @return MQTT message that is sent to turn the LED on
+     */
     private MqttMessage turnLEDOn() {
         String mess = "LED ON";
         byte[] payload = mess.getBytes();

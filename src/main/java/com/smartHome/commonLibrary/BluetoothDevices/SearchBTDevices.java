@@ -4,12 +4,20 @@ import com.smartHome.commonLibrary.HelperClasses.BTTech;
 import com.smartHome.commonLibrary.HelperClasses.NetworkTechnology;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Vector;
 import javax.bluetooth.*;
+
+/**
+ * This class has methods useful for discovering Bluetooth devices available for connection
+ */
 public class SearchBTDevices extends Thread{
+
+    /**
+     * This method discovers Bluetooth devices around the server
+     * @return This method return a Map of Bluetooth devices where the Key is their MAC address
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public HashMap<String,NetworkTechnology> findALlBTDevices() throws IOException, InterruptedException {
 
         final Object inquiryCompletedEvent = new Object();

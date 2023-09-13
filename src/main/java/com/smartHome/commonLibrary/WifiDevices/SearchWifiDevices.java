@@ -2,9 +2,6 @@ package com.smartHome.commonLibrary.WifiDevices;
 
 import com.smartHome.commonLibrary.HelperClasses.NetworkTechnology;
 import com.smartHome.commonLibrary.HelperClasses.WifiTech;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -15,14 +12,20 @@ import java.net.InetAddress;
 import java.util.*;
 import java.util.concurrent.Callable;
 
+/**
+ * This class lists all the Wi-Fi devices connected to the network Interface of the server
+ */
 @Service
 public class SearchWifiDevices extends Thread{
 
-
-    public MqttClient client;
     public String cmdPrompt;
     public Boolean isWindows;
     public String middlearg;
+
+    /**
+     * This constructor determines the Operating System used by the server's machine
+     * as it is needed to run terminal commands
+     */
     public SearchWifiDevices(){
            String os = System.getProperty("os.name");
            if(os.trim().toLowerCase().startsWith("windows")) {
@@ -39,7 +42,10 @@ public class SearchWifiDevices extends Thread{
            System.out.println(cmdPrompt);
     }
 
-    
+    /**
+     * Finds the preferred IP address for communication
+     * @return IP address of the server in byte array
+     */
     public byte[] getIp(){
         byte[] ip = new byte[4];
         try {
@@ -54,6 +60,13 @@ public class SearchWifiDevices extends Thread{
         }
         return ip;
     }
+
+    /**
+     * This method finds all Wi-Fi devices on the Network Interface of the server
+     * @return This method return a Map of Wi-Fi devices where the Key is their MAC address
+     * @throws InterruptedException
+     * @throws IOException
+     */
     public HashMap<String,NetworkTechnology> findAllIPs() throws InterruptedException, IOException {
         final byte[] ip = getIp();
         if(ip==null)
@@ -83,7 +96,14 @@ public class SearchWifiDevices extends Thread{
         }
         return getIPMACmap(ipList,defGateway);
     }
-    
+
+    /**
+     * This method maps the Wi-Fi devices to their MAC addresses
+     * @param ipList List of IP addresses on the Network Interface of the server
+     * @param defGate The Default Gateway IP address so that it can be removed from the final map
+     * @return This method return a Map of Bluetooth devices where the Key is their MAC address
+     * @throws IOException
+     */
     public HashMap<String,NetworkTechnology> getIPMACmap(List<String> ipList, String defGate) throws IOException {
         HashMap<String,NetworkTechnology> wifiList = new HashMap<String,NetworkTechnology>();
         for(String recievedIP:ipList) {
@@ -125,6 +145,13 @@ public class SearchWifiDevices extends Thread{
         return wifiList;
     }
 
+    /**
+     * This method finds out the default gateway IP address by parsing the terminal commands
+     * as per requirement
+     * @param ip The IP address of the Network Interface of the server
+     * @return The default gateway IP address as a String
+     * @throws IOException
+     */
     public String getDefaultGateway(String ip) throws IOException {
         String defGateway = "";
         if(!isWindows){
@@ -182,7 +209,9 @@ public class SearchWifiDevices extends Thread{
         System.out.println("Default Gateway "+defGateway);
         return defGateway;
     }
-    /***
+
+
+    /*
      *
      *
      *

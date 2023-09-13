@@ -1,5 +1,9 @@
 package com.smartHome.commonLibrary.HelperClasses;
 
+/**
+ * This is a class to store all information
+ * about the Bluetooth devices
+ */
 public class BTTech extends NetworkTechnology{
     @Override
     public String toString() {

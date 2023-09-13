@@ -1,5 +1,8 @@
 package com.smartHome.commonLibrary.HelperClasses;
 
+/**
+ * This class is a super class for all networking technologies
+ */
 public class NetworkTechnology {
     private String MAC;
 
