@@ -14,6 +14,18 @@ public class BTTech extends NetworkTechnology{
                 '}';
     }
 
+    private String name;
+    private boolean isPaired;
+    private String devType;
+
+    public String getDevType() {
+        return devType;
+    }
+
+    public void setDevType(String devType) {
+        this.devType = devType;
+    }
+
     public String getName() {
         return name;
     }
@@ -26,12 +38,15 @@ public class BTTech extends NetworkTechnology{
         return isPaired;
     }
 
-    private String name;
-    private boolean isPaired;
+    public BTTech(String name, String MAC) {
+        this.setMAC(MAC);
+        this.name = name;
+    }
 
-    public BTTech(String name, boolean isPaired,String MAC) {
+    public BTTech(String name, boolean isPaired, String MAC) {
         this.setName(name);
         this.isPaired = isPaired;
         this.setMAC(MAC);
+        this.setRegistered(false);
     }
 }

@@ -3,19 +3,18 @@ package com.smartHome.commonLibrary.NetTechID;
 
 import com.smartHome.commonLibrary.BluetoothDevices.SearchBTDevices;
 import com.smartHome.commonLibrary.HelperClasses.NetworkTechnology;
-import com.smartHome.commonLibrary.HelperClasses.WifiTech;
 import com.smartHome.commonLibrary.WifiDevices.SearchWifiDevices;
 
 import java.io.IOException;
 import java.util.*;
+
+import static com.smartHome.commonLibrary.HelperClasses.Constants.*;
 
 /**
  * This class has methods to get a common Map of devices all networking technologies
  */
 public class GetAllDevices {
 
-    public static String wifi = "WiFi";
-    public static String bt = "Bluetooth";
 
     public static void main(String[] args) throws InterruptedException, IOException {
         new GetAllDevices().threadsForID();
@@ -28,41 +27,45 @@ public class GetAllDevices {
      * @throws InterruptedException
      * @throws IOException
      */
-    public HashMap<String,HashMap<String,NetworkTechnology>> threadsForID() throws InterruptedException, IOException {
+    public HashMap<String,NetworkTechnology> threadsForID() throws InterruptedException, IOException {
         List<String> netTechList = new ArrayList<>();
         netTechList.add(wifi);
         netTechList.add(bt);
 
-        HashMap<String,HashMap<String,NetworkTechnology>> devList = new HashMap<String,HashMap<String,NetworkTechnology>>();
-
-        HashMap<String,NetworkTechnology> WifiList = new HashMap<String,NetworkTechnology>()
-                    ,BTList = new HashMap<String,NetworkTechnology>();
-        HashMap<String,String> NameMACMap = new HashMap<String,String>();
+        HashMap<String,NetworkTechnology> allDevList = new HashMap<String,NetworkTechnology>()
+                ,wifiList = new HashMap<String,NetworkTechnology>()
+                ,btList = new HashMap<String,NetworkTechnology>();
 
 
         SearchBTDevices searchBTDevices = new SearchBTDevices();
         SearchWifiDevices searchWifiDevices = new SearchWifiDevices();
 
         for(String netTech: netTechList) {
-            if(netTech.equals(GetAllDevices.wifi)){
+            if(netTech.equals(wifi)){
                 System.out.println("Running wifi thread");
-                WifiList = searchWifiDevices.findAllIPs();
+                wifiList = searchWifiDevices.findAllIPs();
             }
 
-          if(netTech.equals(GetAllDevices.bt)){
+          if(netTech.equals(bt)){
                 System.out.println("Running Bluetooth thread");
-                BTList = searchBTDevices.findALlBTDevices();
+                if(isWindows)
+                    btList = searchBTDevices.findALlBTDevicesWin();
+                else
+                    btList = searchBTDevices.findAllBTDevicesLin();
             }
         }
         searchWifiDevices.join();
         searchBTDevices.join();
-        devList.put(wifi,WifiList);
-        devList.put(bt,BTList);
 
-        System.out.println(devList.get(wifi).toString()+" all wifi devices");
-        System.out.println(devList.get(bt).toString()+" all BT devices");
+        wifiList.forEach((k,v) -> allDevList.put(k,v));
+        btList.forEach((k,v) -> allDevList.put(k,v));
 
-        return devList;
+
+        System.out.println("Wifi "+ wifiList);
+        System.out.println(allDevList);
+
+
+        return allDevList;
     }
 
 }

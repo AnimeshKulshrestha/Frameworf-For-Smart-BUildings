@@ -1,6 +1,7 @@
 package com.smartHome.commonLibrary.WifiDevices;
 
 import com.smartHome.commonLibrary.HelperClasses.NetworkTechnology;
+import com.smartHome.commonLibrary.HelperClasses.Constants;
 import com.smartHome.commonLibrary.HelperClasses.WifiTech;
 import org.springframework.stereotype.Service;
 
@@ -10,7 +11,8 @@ import java.io.InputStreamReader;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.*;
-import java.util.concurrent.Callable;
+
+import static com.smartHome.commonLibrary.HelperClasses.Constants.*;
 
 /**
  * This class lists all the Wi-Fi devices connected to the network Interface of the server
@@ -19,7 +21,7 @@ import java.util.concurrent.Callable;
 public class SearchWifiDevices extends Thread{
 
     public String cmdPrompt;
-    public Boolean isWindows;
+//    public Boolean isWindows;
     public String middlearg;
 
     /**
@@ -27,14 +29,11 @@ public class SearchWifiDevices extends Thread{
      * as it is needed to run terminal commands
      */
     public SearchWifiDevices(){
-           String os = System.getProperty("os.name");
-           if(os.trim().toLowerCase().startsWith("windows")) {
-               this.isWindows = true;
+           if(isWindows) {
                this.cmdPrompt = "cmd.exe";
                this.middlearg = "/c";
            }
            else {
-               this.isWindows = false;
                this.cmdPrompt = "/bin/sh";
                this.middlearg = "-c";
            }
@@ -52,8 +51,10 @@ public class SearchWifiDevices extends Thread{
             try (final DatagramSocket socket = new DatagramSocket()) {
                 socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
                 System.out.println(socket.getLocalAddress().getHostAddress() + " curr add");
+                Constants.ip = socket.getLocalAddress().getHostAddress();
                 InetAddress reqHost = InetAddress.getByName(socket.getLocalAddress().getHostAddress());
                 ip = reqHost.getAddress();
+                Constants.byteip = ip;
             }
         } catch (Exception e) {
             System.out.println("didnt get ip");
@@ -108,12 +109,12 @@ public class SearchWifiDevices extends Thread{
         HashMap<String,NetworkTechnology> wifiList = new HashMap<String,NetworkTechnology>();
         for(String recievedIP:ipList) {
             String recIPcopy = new String(recievedIP);
-            if(!this.isWindows){
+            if(!isWindows){
                 recievedIP = "("+recievedIP+")";
             }
-            if(recievedIP.equalsIgnoreCase(defGate))
+            if(recIPcopy.equalsIgnoreCase(defGate))
                 continue;
-            ProcessBuilder builder = new ProcessBuilder(this.cmdPrompt, this.middlearg, "arp -a " + recievedIP);
+            ProcessBuilder builder = new ProcessBuilder(this.cmdPrompt, this.middlearg, "arp -a " + recIPcopy);
             builder.redirectErrorStream(true);
             Process p = builder.start();
             BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -137,7 +138,13 @@ public class SearchWifiDevices extends Thread{
                                 MAC.substring(12,14)+
                                 MAC.substring(15,17);
                         MAC = MAC.toUpperCase();
-                        wifiList.put(MAC,new WifiTech(recIPcopy ,MAC));
+                        WifiTech wifiTech = new WifiTech(recIPcopy ,MAC);
+                        wifiTech.setNetTech(wifi);
+                        if(Constants.registeredDev.containsKey(MAC)){
+                            wifiTech.setRegistered(true);
+                            wifiTech.setDevType(registeredDev.get(MAC));
+                        }
+                        wifiList.put(MAC,wifiTech);
                     }
                 }
             }
@@ -210,59 +217,4 @@ public class SearchWifiDevices extends Thread{
         return defGateway;
     }
 
-
-    /*
-     *
-     *
-     *
-     *      update later based on requirement
-     *
-     *
-     *
-     *
-     *
-    public List<MqttMessage> findDevicesAround(){
-
-        String broker = "tcp://192.168.45.53:1883"; // MQTT broker address
-        String publisherId = UUID.randomUUID().toString();
-        List<MqttMessage> messageList = new ArrayList<>();
-        try {
-            client = new MqttClient("tcp://192.168.45.53:1883", publisherId);
-            MqttConnectOptions connOpts = new MqttConnectOptions();
-            connOpts.setCleanSession(true);
-            System.out.println("Connecting to broker: " + broker);
-            client.connect(connOpts);
-            System.out.println("Connected");
-            String topic = "LED"; // Adjust the topic as needed
-            this.call();
-            client.subscribe(topic, (topic1, message) -> {
-                String payload = new String(message.getPayload());
-                System.out.println("Received message on topic " + topic1 + ": " + payload);
-                messageList.add(message);
-            });
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return messageList;
-    }
-
-    @Override
-    public Void call() throws Exception {
-        if ( !client.isConnected()) {
-            return null;
-        }
-        MqttMessage msg = readEngineTemp();
-        msg.setQos(0);
-        msg.setRetained(true);
-        client.publish("LED",msg);
-        System.out.println("publcished");
-        return null;
-    }
-
-    private MqttMessage readEngineTemp() {
-        String mess = "LED OFF";
-        byte[] payload = mess.getBytes();
-        return new MqttMessage(payload);
-    }
-    */
 }

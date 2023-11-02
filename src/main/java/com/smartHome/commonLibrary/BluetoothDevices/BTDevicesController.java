@@ -4,9 +4,9 @@ import com.smartHome.commonLibrary.HelperClasses.NetworkTechnology;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.net.SocketException;
 import java.util.HashMap;
-import java.util.List;
+
+import static com.smartHome.commonLibrary.HelperClasses.Constants.isWindows;
 
 /**
  * This class is a controller for Bluetooth Devices
@@ -23,7 +23,9 @@ public class BTDevicesController {
      */
     @GetMapping("/getDevices")
     public HashMap<String,NetworkTechnology> getBTDevice() throws IOException, InterruptedException {
-        return new SearchBTDevices().findALlBTDevices();
+        if(isWindows)
+            return new SearchBTDevices().findALlBTDevicesWin();
+        return new SearchBTDevices().findAllBTDevicesLin();
     }
 
 }
